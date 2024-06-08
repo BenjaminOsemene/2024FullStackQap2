@@ -46,7 +46,7 @@ const server = http.createServer((req, res) => {
 // This is the function to serve HTML files
 // It uses fs.readFile() method to read the files from the views directory 
 // If errors occurs while reading the file, error message is sent and error event is emitted using myEmitter.emit('error', ...).
- //If the file is raed successfully a 200 ok response is sentand a fileRead event is emmitted using myEmitter.emit('fileRead', ...)
+ //If the file is raed successfully a 200 ok response is sent and a fileRead event is emmitted using myEmitter.emit('fileRead', ...)
 function serveFile(res, fileName, contentType) {
     const filePath = path.join(__dirname, 'views', fileName);
     fs.readFile(filePath, (err, data) => {
