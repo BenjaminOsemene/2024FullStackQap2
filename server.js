@@ -1,22 +1,26 @@
 // Created node.js server that serves HTML files
-// Import required core modules such as http for creating http server
+// Imported required core modules such as http for creating http server
 // fs for the file system, and path for handling file path
 // Events for creating and handling events
+// Imported the logger
+//imported getNews, getWeather, and getMovies
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const EventEmitter = require('events');
+const logger = require('./logger');
+const { getNews, getWeather, getMovies } = require('./news');
 
 // Defining an EventEmitter class
 class MyEmitter extends EventEmitter {}
 const myEmitter = new MyEmitter();
 
-// 1. Capture the common HTTP status codes and write a message to the console
+// Capture the common HTTP status codes and write a message to the console
 myEmitter.on('statusCode', (statusCode) => {
     console.log(`HTTP Status Code: ${statusCode}`);
 });
 
-// 2. Capture only the warnings and errors and write a message to the console
+// Capture only the warnings and errors and write a message to the console
 myEmitter.on('warning', (message) => {
     console.log(`Warning: ${message}`);
 });
@@ -25,35 +29,36 @@ myEmitter.on('error', (message) => {
     console.log(`Error: ${message}`);
 });
 
-// 3. Every time a specific route was accessed and write a message to the console
+// Every time a specific route was accessed and write a message to the console
 myEmitter.on('routeAccessed', (route) => {
     console.log(`Route accessed: ${route}`);
 });
 
-// 4. For every route that is not the home and write a message to the console
+// For every route that is not the home and write a message to the console
 myEmitter.on('nonHomeRoute', (route) => {
     console.log(`Non-home route accessed: ${route}`);
 });
 
-// 5. Every time a file was successfully read and write a message to the console
+// Every time a file was successfully read and write a message to the console
 myEmitter.on('fileRead', (message) => {
     console.log(`File read: ${message}`);
 });
 
-// 6. Every time a file is not available and write a message to the console
+// Every time a file is not available and write a message to the console
 myEmitter.on('fileNotFound', (message) => {
     console.log(`File not found: ${message}`);
 });
 
 // Create the HTTP server using http.createServer() method that
 // Handling incoming requests and execute callback function for each request and response
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
     // Logging the requested URL to console
     console.log(`Request URL: ${req.url}`);
 
     // Switch method is used to determine the action based on the route requested
     // If the URL matches any of the cases the corresponding HTML is served using the serveFile()
     // But if the URL does not match any of the cases a 404 Not Found response is sent.
+    //Added case to handle daily route
     switch (req.url) {
         case '/about':
             serveFile(res, 'about.html', 'text/html', req.url);
@@ -69,6 +74,45 @@ const server = http.createServer((req, res) => {
             break;
         case '/':
             serveFile(res, 'index.html', 'text/html', req.url);
+            break;
+        case '/daily':
+            const news = await getNews();
+            const weather = await getWeather('New York');
+            const movies = await getMovies();
+
+            const dailyData = {
+                news,
+                weather,
+                movies
+            };
+//Server renders in HTML if including html/text, otherwise as a JSON data 
+            if (req.headers.accept.includes('text/html')) {
+                res.writeHead(200, { 'Content-Type': 'text/html' });
+                res.write('<h1>Daily Information</h1>');
+                res.write('<h2>News</h2>');
+                res.write('<ul>');
+                news.forEach(article => {
+                    res.write(`<li>${article.title}</li>`);
+                });
+                res.write('</ul>');
+
+                res.write('<h2>Weather</h2>');
+                res.write(`<p>City: ${weather.name}</p>`);
+                res.write(`<p>Temperature: ${weather.main.temp}°C</p>`);
+                res.write(`<p>Description: ${weather.weather[0].description}</p>`);
+
+                res.write('<h2>Popular Movies</h2>');
+                res.write('<ul>');
+                movies.forEach(movie => {
+                    res.write(`<li>${movie.title}</li>`);
+                });
+                res.write('</ul>');
+
+                res.end();
+            } else {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify(dailyData));
+            }
             break;
         default:
             res.writeHead(404, { 'Content-Type': 'text/html' });
@@ -92,17 +136,21 @@ function serveFile(res, fileName, contentType, route) {
             myEmitter.emit('statusCode', 500);
             myEmitter.emit('error', `Error reading file: ${fileName}`);
             myEmitter.emit('fileNotFound', `File not found: ${fileName}`);
+            logger.error(`Error reading file: ${fileName}`, err); // Log error with logger
         } else {
             res.writeHead(200, { 'Content-Type': contentType });
             res.end(data);
             myEmitter.emit('statusCode', 200);
             myEmitter.emit('routeAccessed', route);
             myEmitter.emit('fileRead', `File served: ${fileName}`);
+            logger.info(`File served: ${fileName}`); // Log success with logger
         }
     });
 }
 
 // Then Listening on port 3000, a message is being logged to the console
+// Log server start with logger
 server.listen(3000, () => {
     console.log('Server is listening on port 3000');
+    logger.info('Server is listening on port 3000');
 });
