@@ -80,28 +80,39 @@ const server = http.createServer(async (req, res) => {
             const weather = await getWeather('New York');
             const movies = await getMovies();
 
-            res.writeHead(200, { 'Content-Type': 'text/html' });
-            res.write('<h1>Daily Information</h1>');
-            res.write('<h2>News</h2>');
-            res.write('<ul>');
-            news.forEach(article => {
-                res.write(`<li>${article.title}</li>`);
-            });
-            res.write('</ul>');
+            const dailyData = {
+                news,
+                weather,
+                movies
+            };
+//Server renders in HTML if including html/text, otherwise as a JSON data 
+            if (req.headers.accept.includes('text/html')) {
+                res.writeHead(200, { 'Content-Type': 'text/html' });
+                res.write('<h1>Daily Information</h1>');
+                res.write('<h2>News</h2>');
+                res.write('<ul>');
+                news.forEach(article => {
+                    res.write(`<li>${article.title}</li>`);
+                });
+                res.write('</ul>');
 
-            res.write('<h2>Weather</h2>');
-            res.write(`<p>City: ${weather.name}</p>`);
-            res.write(`<p>Temperature: ${weather.main.temp}°C</p>`);
-            res.write(`<p>Description: ${weather.weather[0].description}</p>`);
+                res.write('<h2>Weather</h2>');
+                res.write(`<p>City: ${weather.name}</p>`);
+                res.write(`<p>Temperature: ${weather.main.temp}°C</p>`);
+                res.write(`<p>Description: ${weather.weather[0].description}</p>`);
 
-            res.write('<h2>Popular Movies</h2>');
-            res.write('<ul>');
-            movies.forEach(movie => {
-                res.write(`<li>${movie.title}</li>`);
-            });
-            res.write('</ul>');
+                res.write('<h2>Popular Movies</h2>');
+                res.write('<ul>');
+                movies.forEach(movie => {
+                    res.write(`<li>${movie.title}</li>`);
+                });
+                res.write('</ul>');
 
-            res.end();
+                res.end();
+            } else {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify(dailyData));
+            }
             break;
         default:
             res.writeHead(404, { 'Content-Type': 'text/html' });
