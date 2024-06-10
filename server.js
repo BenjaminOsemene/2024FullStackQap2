@@ -120,8 +120,8 @@ const server = http.createServer(async (req, res) => {
                 res.end(JSON.stringify(dailyData));
             }
             break;
-        case '/styles.css': // Added case to serve styles.css
-            serveFile(res, 'styles.css', 'text/css', req.url);
+        case '/styles.css': // Updated case to use serveStylesFile function
+            serveStylesFile(res, 'styles.css', 'text/css', req.url);
             break;
         default:
             res.writeHead(404, { 'Content-Type': 'text/html' });
@@ -169,6 +169,28 @@ function serveFile(res, fileName, contentType, route) {
 
 function serveFileWithoutMenu(res, fileName, contentType, route) {
     const filePath = path.join(__dirname, 'views', fileName);
+    fs.readFile(filePath, (err, data) => {
+        if (err) {
+            res.writeHead(500, { 'Content-Type': 'text/html' });
+            res.end('<h1>500 Internal Server Error</h1>');
+            myEmitter.emit('statusCode', 500);
+            myEmitter.emit('error', `Error reading file: ${fileName}`);
+            myEmitter.emit('fileNotFound', `File not found: ${fileName}`);
+            logger.error(`Error reading file: ${fileName}`, err); // Log error with logger
+        } else {
+            res.writeHead(200, { 'Content-Type': contentType });
+            res.end(data);
+            myEmitter.emit('statusCode', 200);
+            myEmitter.emit('routeAccessed', route);
+            myEmitter.emit('fileRead', `File served: ${fileName}`);
+            logger.info(`File served: ${fileName}`); // Log success with logger
+        }
+    });
+}
+
+// Function to serve styles.css file
+function serveStylesFile(res, fileName, contentType, route) {
+    const filePath = path.join(__dirname, fileName);
     fs.readFile(filePath, (err, data) => {
         if (err) {
             res.writeHead(500, { 'Content-Type': 'text/html' });
