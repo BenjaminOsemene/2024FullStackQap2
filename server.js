@@ -120,6 +120,9 @@ const server = http.createServer(async (req, res) => {
                 res.end(JSON.stringify(dailyData));
             }
             break;
+        case '/styles.css': // Added case to serve styles.css
+            serveFile(res, 'styles.css', 'text/css', req.url);
+            break;
         default:
             res.writeHead(404, { 'Content-Type': 'text/html' });
             res.end('<h1>404 Not Found</h1>');
@@ -134,6 +137,37 @@ const server = http.createServer(async (req, res) => {
 // If errors occur while reading the file, error message is sent and error event is emitted using myEmitter.emit('error', ...).
 // If the file is read successfully a 200 OK response is sent and a fileRead event is emitted using myEmitter.emit('fileRead', ...)
 function serveFile(res, fileName, contentType, route) {
+    const filePath = path.join(__dirname, 'views', fileName);
+    const menuFilePath = path.join(__dirname, 'views', 'menu.html'); // Path to the menu.html file
+
+    fs.readFile(menuFilePath, 'utf8', (err, menuContent) => {
+        if (err) {
+            console.error('Error reading menu file:', err);
+            return serveFileWithoutMenu(res, fileName, contentType, route);
+        }
+
+        fs.readFile(filePath, 'utf8', (err, data) => {
+            if (err) {
+                res.writeHead(500, { 'Content-Type': 'text/html' });
+                res.end('<h1>500 Internal Server Error</h1>');
+                myEmitter.emit('statusCode', 500);
+                myEmitter.emit('error', `Error reading file: ${fileName}`);
+                myEmitter.emit('fileNotFound', `File not found: ${fileName}`);
+                logger.error(`Error reading file: ${fileName}`, err); // Log error with logger
+            } else {
+                const html = data.replace('<!-- NAVIGATION -->', menuContent);
+                res.writeHead(200, { 'Content-Type': contentType });
+                res.end(html);
+                myEmitter.emit('statusCode', 200);
+                myEmitter.emit('routeAccessed', route);
+                myEmitter.emit('fileRead', `File served: ${fileName}`);
+                logger.info(`File served: ${fileName}`); // Log success with logger
+            }
+        });
+    });
+}
+
+function serveFileWithoutMenu(res, fileName, contentType, route) {
     const filePath = path.join(__dirname, 'views', fileName);
     fs.readFile(filePath, (err, data) => {
         if (err) {
