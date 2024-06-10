@@ -1,22 +1,25 @@
 // Created node.js server that serves HTML files
-// Import required core modules such as http for creating http server
+// Imported required core modules such as http for creating http server
 // fs for the file system, and path for handling file path
 // Events for creating and handling events
+// Imported the logger
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const EventEmitter = require('events');
+const logger = require('./logger'); 
 
 // Defining an EventEmitter class
 class MyEmitter extends EventEmitter {}
 const myEmitter = new MyEmitter();
 
-// 1. Capture the common HTTP status codes and write a message to the console
+
+//This capture the common HTTP status codes and wrote a message to the console
 myEmitter.on('statusCode', (statusCode) => {
     console.log(`HTTP Status Code: ${statusCode}`);
 });
 
-// 2. Capture only the warnings and errors and write a message to the console
+//Can capture only the warnings and errors and write a message to the console
 myEmitter.on('warning', (message) => {
     console.log(`Warning: ${message}`);
 });
@@ -25,22 +28,22 @@ myEmitter.on('error', (message) => {
     console.log(`Error: ${message}`);
 });
 
-// 3. Every time a specific route was accessed and write a message to the console
+//This capture everytime a specific route is accessed and write a message to the console
 myEmitter.on('routeAccessed', (route) => {
     console.log(`Route accessed: ${route}`);
 });
 
-// 4. For every route that is not the home and write a message to the console
+//This also capture every route that is not the home and write a message to the console
 myEmitter.on('nonHomeRoute', (route) => {
     console.log(`Non-home route accessed: ${route}`);
 });
 
-// 5. Every time a file was successfully read and write a message to the console
+//Will capture every time a file is  successfully read and write a message to the console
 myEmitter.on('fileRead', (message) => {
     console.log(`File read: ${message}`);
 });
 
-// 6. Every time a file is not available and write a message to the console
+//Can capture everytime a file is not available and write a message to the console
 myEmitter.on('fileNotFound', (message) => {
     console.log(`File not found: ${message}`);
 });
@@ -92,17 +95,21 @@ function serveFile(res, fileName, contentType, route) {
             myEmitter.emit('statusCode', 500);
             myEmitter.emit('error', `Error reading file: ${fileName}`);
             myEmitter.emit('fileNotFound', `File not found: ${fileName}`);
+            logger.error(`Error reading file: ${fileName}`, err); // Log error with logger
         } else {
             res.writeHead(200, { 'Content-Type': contentType });
             res.end(data);
             myEmitter.emit('statusCode', 200);
             myEmitter.emit('routeAccessed', route);
             myEmitter.emit('fileRead', `File served: ${fileName}`);
+            logger.info(`File served: ${fileName}`); // Log success with logger
         }
     });
 }
 
 // Then Listening on port 3000, a message is being logged to the console
+// Log server start with logger
 server.listen(3000, () => {
     console.log('Server is listening on port 3000');
+    logger.info('Server is listening on port 3000'); 
 });
