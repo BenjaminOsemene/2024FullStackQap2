@@ -85,7 +85,8 @@ const server = http.createServer(async (req, res) => {
                 weather,
                 movies
             };
-//Server renders in HTML if including html/text, otherwise as a JSON data 
+
+            //Server renders in HTML if including html/text, otherwise as a JSON data 
             if (req.headers.accept.includes('text/html')) {
                 res.writeHead(200, { 'Content-Type': 'text/html' });
                 res.write('<h1>Daily Information</h1>');
@@ -96,10 +97,15 @@ const server = http.createServer(async (req, res) => {
                 });
                 res.write('</ul>');
 
-                res.write('<h2>Weather</h2>');
-                res.write(`<p>City: ${weather.name}</p>`);
-                res.write(`<p>Temperature: ${weather.main.temp}°C</p>`);
-                res.write(`<p>Description: ${weather.weather[0].description}</p>`);
+                if (weather && weather.main) {
+                    res.write('<h2>Weather</h2>');
+                    res.write(`<p>City: ${weather.name}</p>`);
+                    res.write(`<p>Temperature: ${weather.main.temp}°C</p>`);
+                    res.write(`<p>Description: ${weather.weather[0].description}</p>`);
+                } else {
+                    res.write('<h2>Weather</h2>');
+                    res.write('<p>Weather data not available</p>');
+                }
 
                 res.write('<h2>Popular Movies</h2>');
                 res.write('<ul>');
