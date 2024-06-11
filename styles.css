@@ -1,0 +1,130 @@
+
+    nav {
+      background-color: #333;
+      padding:10px 0;
+      display:flex;
+      justify-content:center;
+    }
+
+    nav a {
+      color: #f2f2f2;
+      text-decoration: none;
+      padding: 10px 20px;
+      margin: 0 10px;
+    }
+
+    nav a:hover {
+      background-color: #575757;
+      color:#FFD700;
+      border-radius:5px
+    }
+
+
+body, h1, p, ul, li, a, form, input, label {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+    padding: 20px;
+    align-items: center;
+    height: 100vh;
+}
+
+form {
+    background: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+form label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+form input[type="email"] {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    width: 100%;
+}
+
+form input[type="submit"] {
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #77d62d;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+form input[type="submit"]:hover {
+    background-color: #66b22d;
+}
+
+@media (max-width: 768px) {
+    form {
+        padding: 15px;
+    }
+
+    form input[type="email"], form input[type="submit"] {
+        font-size: 14px;
+    }
+}
+
+
+
+ul {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+ul li {
+    padding: 15px 20px;
+    border-bottom: 1px solid #ddd;
+    position: relative;
+    transition: background-color 0.3s ease;
+}
+
+ul li:last-child {
+    border-bottom: none;
+}
+
+ul li:hover {
+    background-color: #f0f0f0;
+}
+
+ul li::before {
+    content: '•';
+    color: #77d62d;
+    font-size: 20px;
+    margin-right: 10px;
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+
+  
+
+
